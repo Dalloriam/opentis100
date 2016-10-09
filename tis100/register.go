@@ -45,3 +45,35 @@ func (r *SimpleRegister) valueUpdater() {
 		}
 	}
 }
+
+type readOnlyRegister struct {
+	reader <-chan int
+}
+
+func newReadOnlyRegister(inChannel <-chan int) *readOnlyRegister {
+	return &readOnlyRegister{reader: inChannel}
+}
+
+func (r *readOnlyRegister) Reader() <-chan int {
+	return r.reader
+}
+
+func (r *readOnlyRegister) Writer() chan<- int {
+	return nil
+}
+
+type writeOnlyRegister struct {
+	writer chan<- int
+}
+
+func newWriteOnlyRegister(outChannel chan<- int) *writeOnlyRegister {
+	return &writeOnlyRegister{writer: outChannel}
+}
+
+func (r *writeOnlyRegister) Reader() <-chan int {
+	return nil
+}
+
+func (r *writeOnlyRegister) Writer() chan<- int {
+	return r.writer
+}

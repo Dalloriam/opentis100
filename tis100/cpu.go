@@ -1,5 +1,7 @@
 package tis100
 
+import "errors"
+
 const maxNodeX int = 4
 const maxNodeY int = 3
 
@@ -24,14 +26,44 @@ func New(computerName string) *Computer {
 			node := nodeList[maxNodeX*y+x]
 
 			if 0 < y && y < maxNodeY {
-				node.AttachNode(nodeList[maxNodeX*(y-1)+x], up)
+				node.AttachNode(nodeList[maxNodeX*(y-1)+x], UP)
 			}
 
 			if 0 < x && x < maxNodeX {
-				node.AttachNode(nodeList[maxNodeX*y+x-1], left)
+				node.AttachNode(nodeList[maxNodeX*y+x-1], LEFT)
 			}
 		}
 	}
 
 	return &Computer{Name: computerName, nodes: nodeList}
+}
+
+// AttachInput attaches an input stream to the specified port of the specified node
+func (c *Computer) AttachInput(inStream <-chan int, nodeID int, nodeDirection Direction) error {
+	var err error
+
+	r := newReadOnlyRegister(inStream)
+
+	if nodeID < len(c.nodes) {
+		err = c.nodes[nodeID].SetPort(nodeDirection, r)
+	} else {
+		err = errors.New("The specified node doesn't exist!")
+	}
+
+	return err
+}
+
+// AttachOutput attaches an output stream to the specified port of the specified node
+func (c *Computer) AttachOutput(outStream chan<- int, nodeID int, nodeDirection Direction) error {
+	var err error
+
+	r := newWriteOnlyRegister(outStream)
+
+	if nodeID < len(c.nodes) {
+		err = c.nodes[nodeID].SetPort(nodeDirection, r)
+	} else {
+		err = errors.New("The specified node doesn't exist!")
+	}
+
+	return err
 }
