@@ -8,7 +8,7 @@ type SimpleRegister struct {
 }
 
 // NewRegister makes a new simple register
-func NewRegister() *SimpleRegister {
+func newRegister() *SimpleRegister {
 	r := SimpleRegister{value: 0, reader: make(chan int), writer: make(chan int)}
 
 	go r.valueUpdater()

@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/dalloriam/opentis/tis100"
+)
 
 func main() {
-	fmt.Println("Hello from TIS-100")
+	comp := tis100.New("myTIS")
+	fmt.Println(comp.Name)
 }

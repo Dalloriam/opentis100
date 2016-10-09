@@ -10,6 +10,15 @@ const (
 	WRITE state = 3
 )
 
+type direction int
+
+const (
+	up    direction = 0
+	right direction = 1
+	down  direction = 2
+	left  direction = 3
+)
+
 // Node represents a TIS-100 CPU core
 type Node struct {
 	// Node Information
@@ -33,9 +42,8 @@ type Node struct {
 	LEFT  IRegister
 }
 
-// CreateNode creates and returns a new node
-func CreateNode(id int) *Node {
-	return &Node{ID: id, acc: NewRegister(), bak: NewRegister(), State: IDLE, ProgramLoaded: false, memory: []*instruction{}}
+func newNode(id int) *Node {
+	return &Node{ID: id, acc: newRegister(), bak: newRegister(), State: IDLE, ProgramLoaded: false, memory: []*instruction{}}
 }
 
 // Reader returns the transfer channel of the node
@@ -60,4 +68,22 @@ func (n *Node) UnloadBytecode() {
 	n.acc.Writer() <- 0
 	n.bak.Writer() <- 0
 	n.State = IDLE
+}
+
+// AttachNode bidirectionally attaches a node to this node
+func (n *Node) AttachNode(otherNode *Node, port direction) {
+	switch port {
+	case up:
+		n.UP = otherNode
+		otherNode.DOWN = n
+	case right:
+		n.RIGHT = otherNode
+		otherNode.LEFT = n
+	case down:
+		n.DOWN = otherNode
+		otherNode.UP = n
+	case left:
+		n.LEFT = otherNode
+		otherNode.RIGHT = n
+	}
 }
