@@ -33,7 +33,7 @@ type Node struct {
 	// Node Execution Information
 	currentInstruction int
 	transfer           chan int
-	memory             []*instruction
+	memory             *InstructionSet
 
 	// Physical Registers
 	acc IRegister
@@ -47,7 +47,7 @@ type Node struct {
 }
 
 func newNode(id int) *Node {
-	return &Node{ID: id, acc: newRegister(), bak: newRegister(), State: IDLE, ProgramLoaded: false, memory: []*instruction{}}
+	return &Node{ID: id, acc: newRegister(), bak: newRegister(), State: IDLE, ProgramLoaded: false, memory: nil}
 }
 
 // GetPort returns the register connected at this port

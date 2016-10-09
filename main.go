@@ -7,6 +7,11 @@ import (
 )
 
 func main() {
-	comp := tis100.New("myTIS")
+	program := ` @0
+	mov 1 acc
+	`
+
+	comp := tis100.New("TIS-100")
+	comp.LoadProgram(program)
 	fmt.Println(comp.Name)
 }
