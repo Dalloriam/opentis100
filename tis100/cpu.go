@@ -69,11 +69,11 @@ func (c *Computer) AttachOutput(outStream chan<- int, nodeID int, nodeDirection 
 }
 
 // LoadProgramSource compiles the source of a program and loads it into the TIS-100
-func (c *Computer) LoadProgramSource(src string) error {
+func (c *Computer) LoadProgramSource(name string, src string) error {
 	var err error
 	var p *Program
 
-	p, err = Compile(src)
+	p, err = Compile(name, src)
 
 	return err
 }
