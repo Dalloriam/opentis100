@@ -75,12 +75,22 @@ func (c *Computer) LoadProgramSource(name string, src string) error {
 
 	p, err = Compile(name, src)
 
+	if err != nil {
+		return err
+	}
+
+	err = c.LoadProgramBinary(p)
+
 	return err
 }
 
 // LoadProgramBinary loads a compiled program in the TIS-100
-func (c *Computer) LoadProgramBinary(p Program) error {
+func (c *Computer) LoadProgramBinary(p *Program) error {
 	var err error
+
+	for i, set := range p.Sets {
+		c.nodes[i].LoadInstructions(set)
+	}
 
 	return err
 }

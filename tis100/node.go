@@ -100,15 +100,16 @@ func (n *Node) Writer() chan<- int {
 	return n.transfer
 }
 
-// LoadBytecode loads bytecode into the node
-func (n *Node) LoadBytecode(bytecode []instruction) {
+// LoadInstructions loads bytecode into the node
+func (n *Node) LoadInstructions(i *InstructionSet) {
 	n.ProgramLoaded = true
+	n.memory = i
 }
 
 // UnloadBytecode clears the node's memory and registers
 func (n *Node) UnloadBytecode() {
 	n.ProgramLoaded = false
-	n.memory = []*instruction{}
+	n.memory = &InstructionSet{}
 	n.acc.Writer() <- 0
 	n.bak.Writer() <- 0
 	n.State = IDLE

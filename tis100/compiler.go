@@ -25,7 +25,7 @@ func ParseBlock(lines []string) (*InstructionSet, error) {
 // Program represents a program that can be executed by the TIS-100
 type Program struct {
 	Name string
-	Sets map[int]*InstructionSet
+	Sets map[int]*InstructionSet // One InstructionSet per node
 }
 
 // Compile compile TIS source code and returns an executable program
@@ -36,7 +36,6 @@ func Compile(name string, src string) (*Program, error) {
 	sets := make(map[int]*InstructionSet)
 
 	commentPattern := regexp.MustCompile("#.*$")
-	opPattern := regexp.MustCompile("(?P<name>[A-Z]+)(\\s*(?P<arg1>[0-9A-Z_]+)(,?\\s*(?P<arg2>[0-9A-Z_]+))?)?")
 
 	lines := strings.Split(src, "\n")
 
@@ -57,13 +56,27 @@ func Compile(name string, src string) (*Program, error) {
 					}
 
 					sets[currentID] = set
+					currentBlock = nil
 				}
 				currentID, err = strconv.Atoi(strings.Replace(line, "@", "", -1))
 				if err != nil {
 					return nil, err
 				}
+			} else {
+				currentBlock = append(currentBlock, line)
 			}
 		}
+	}
+
+	// Push last block
+	if currentBlock != nil {
+		set, err := ParseBlock(currentBlock)
+
+		if err != nil {
+			return nil, err
+		}
+
+		sets[currentID] = set
 	}
 
 	prog = &Program{Name: name, Sets: sets}
