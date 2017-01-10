@@ -7,12 +7,13 @@ import (
 )
 
 func main() {
-	program := ` @0
+	program := `@0
 	mov 0 acc
 	mov acc down
 
 	@1
-	mov 1 acc
+	mov 0 acc
+	a: mov 1 acc
 	`
 
 	comp := tis100.New("TIS-100")

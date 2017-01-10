@@ -1,6 +1,7 @@
 package tis100
 
 import (
+	"errors"
 	"regexp"
 	"strconv"
 	"strings"
@@ -8,16 +9,70 @@ import (
 
 // InstructionSet is a set of instructions loaded in a single node
 type InstructionSet struct {
-	Instructions []instruction
+	Instructions []*Instruction
 
 	// Map [labelName]InstructionNo
 	Labels map[string]int
 }
 
+func parseInstruction(instruction string) (*Instruction, error) {
+	var err error
+
+	data := strings.Split(instruction, " ")
+
+	if len(data) > 0 && len(data) < 4 {
+		// Valid instruction
+		op := data[0]
+
+		var a1 string
+		var a2 string
+
+		if len(data) > 1 {
+			a1 = data[1]
+		}
+
+		if len(data) > 2 {
+			a2 = data[2]
+		}
+
+		return newInstruction(op, a1, a2), err
+
+	}
+	// Invalid instruction
+	return nil, errors.New("[Error] Invalid instruction: " + instruction)
+
+}
+
 // ParseBlock parses the instruction set for a single node
 func ParseBlock(lines []string) (*InstructionSet, error) {
 	var err error
-	var ins *InstructionSet
+	ins := &InstructionSet{Labels: make(map[string]int), Instructions: []*Instruction{}}
+
+	for i, line := range lines {
+
+		// Label detection
+		// S: MOV LEFT ACC
+		// JEZ E
+		// SWP
+		// ADD 1
+		labels := strings.Split(line, ":")
+
+		if len(labels) > 1 {
+			// Line has label
+			ins.Labels[labels[0]] = i
+		}
+
+		instr := strings.TrimSpace(strings.Replace(line, labels[0]+":", "", -1))
+
+		in, err := parseInstruction(instr)
+
+		if err != nil {
+			return nil, err
+		}
+
+		ins.Instructions = append(ins.Instructions, in)
+
+	}
 
 	return ins, err
 }
