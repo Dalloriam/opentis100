@@ -1,9 +1,6 @@
 package tis100
 
-import (
-	"errors"
-	"fmt"
-)
+import "errors"
 
 const maxNodeX int = 4
 const maxNodeY int = 3
@@ -77,14 +74,6 @@ func (c *Computer) LoadProgramSource(name string, src string) error {
 	var p *Program
 
 	p, err = Compile(name, src)
-
-	fmt.Println("New Set")
-	for _, set := range p.Sets {
-		fmt.Println(set.Labels)
-		for _, instruction := range set.Instructions {
-			fmt.Println(instruction)
-		}
-	}
 
 	if err != nil {
 		return err
