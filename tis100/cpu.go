@@ -94,3 +94,18 @@ func (c *Computer) LoadProgramBinary(p *Program) error {
 
 	return err
 }
+
+func (c *Computer) tick() {
+
+}
+
+// Start begins the execution of the currently loaded binary
+func (c *Computer) Start() error {
+	var err error
+
+	for _, node := range c.nodes {
+		go node.Start()
+	}
+
+	return err
+}

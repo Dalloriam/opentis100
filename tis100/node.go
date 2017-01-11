@@ -1,6 +1,9 @@
 package tis100
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 type state int
 
@@ -71,7 +74,7 @@ func (n *Node) GetPort(d Direction) *IRegister {
 // SetPort binds a register to a port of this node
 func (n *Node) SetPort(d Direction, r IRegister) error {
 	current := n.GetPort(d)
-	if current == nil {
+	if *current == nil {
 		switch d {
 		case UP:
 			n.up = r
@@ -117,6 +120,7 @@ func (n *Node) UnloadBytecode() {
 
 // AttachNode bidirectionally attaches a node to this node
 func (n *Node) AttachNode(otherNode *Node, port Direction) {
+
 	switch port {
 	case UP:
 		n.up = otherNode
@@ -131,4 +135,13 @@ func (n *Node) AttachNode(otherNode *Node, port Direction) {
 		n.left = otherNode
 		otherNode.right = n
 	}
+}
+
+func (n *Node) tick() {
+
+}
+
+// Start starts a node
+func (n *Node) Start() {
+	fmt.Printf("Node %d started", n.ID)
 }
