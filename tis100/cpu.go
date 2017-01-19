@@ -90,8 +90,8 @@ func (c *Computer) LoadProgramSource(name string, src string) error {
 func (c *Computer) LoadProgramBinary(p *Program) error {
 	var err error
 
-	for i := 0; i < len(p.Sets); i++ {
-		c.nodes[i].LoadInstructions(p.Sets[i])
+	for i, set := range p.Sets {
+		c.nodes[i].LoadInstructions(set)
 	}
 
 	return err

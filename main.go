@@ -12,19 +12,25 @@ func main() {
 
 	program := `@0
 	mov up acc
+	add acc
+	mov acc down
+@4
+	mov up acc
 	mov acc left
 	`
 
+	fmt.Println("Input Program: ")
+
+	fmt.Println(program)
+
 	comp := tis100.New("TIS-100")
 
-	fmt.Println("Loading test program in TIS-100...")
 	err = comp.LoadProgramSource("testProgram", program)
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Starting & attaching input goroutine...")
 	in := make(chan int)
 
 	go func() {
@@ -32,7 +38,7 @@ func main() {
 			in <- i
 		}
 		close(in)
-		panic("Done.")
+		panic("DOne")
 	}()
 
 	err = comp.AttachInput(in, 0, tis100.UP)
@@ -41,10 +47,9 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println("Starting & attaching output goroutine...")
 	out := make(chan int)
 
-	err = comp.AttachOutput(out, 0, tis100.LEFT)
+	err = comp.AttachOutput(out, 4, tis100.LEFT)
 
 	if err != nil {
 		panic(err)
@@ -53,7 +58,7 @@ func main() {
 	comp.Start()
 
 	for o := range out {
-		fmt.Print("TIS-100: ")
+		fmt.Print("Output: ")
 		fmt.Println(o)
 	}
 }

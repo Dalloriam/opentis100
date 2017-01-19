@@ -1,52 +1,25 @@
 package tis100
 
-import "fmt"
-
 // SimpleRegister defines a simple register
 type SimpleRegister struct {
-	value  int
-	reader chan int
-	writer chan int
+	value int
 }
 
 // NewRegister makes a new simple register
 func newRegister() *SimpleRegister {
-	r := SimpleRegister{value: 0, reader: make(chan int), writer: make(chan int)}
-
-	go r.valueUpdater()
-	go r.valueReader()
+	r := SimpleRegister{value: 0}
 
 	return &r
 }
 
 // Reader returns the reading channel of the register
-func (r *SimpleRegister) Reader() <-chan int {
-	return r.reader
+func (r *SimpleRegister) Read() int {
+	return r.value
 }
 
 // Writer returns the writing channel of the register
-func (r *SimpleRegister) Writer() chan<- int {
-	return r.writer
-}
-
-func (r *SimpleRegister) valueReader() {
-	for {
-		r.reader <- r.value
-	}
-}
-
-func (r *SimpleRegister) valueUpdater() {
-	for {
-		select {
-		case x, open := <-r.writer:
-			r.value = x
-			fmt.Printf("Value: %d\n", x)
-			if !open {
-				close(r.writer)
-				return
-			}
-		}
-	}
+func (r *SimpleRegister) Write(i int) {
+	r.value = i
 }
 
 type readOnlyRegister struct {
@@ -57,12 +30,11 @@ func newReadOnlyRegister(inChannel <-chan int) *readOnlyRegister {
 	return &readOnlyRegister{reader: inChannel}
 }
 
-func (r *readOnlyRegister) Reader() <-chan int {
-	return r.reader
+func (r *readOnlyRegister) Read() int {
+	return <-r.reader
 }
 
-func (r *readOnlyRegister) Writer() chan<- int {
-	return nil
+func (r *readOnlyRegister) Write(i int) {
 }
 
 type writeOnlyRegister struct {
@@ -73,10 +45,29 @@ func newWriteOnlyRegister(outChannel chan<- int) *writeOnlyRegister {
 	return &writeOnlyRegister{writer: outChannel}
 }
 
-func (r *writeOnlyRegister) Reader() <-chan int {
-	return nil
+func (r *writeOnlyRegister) Read() int {
+	return -1
 }
 
-func (r *writeOnlyRegister) Writer() chan<- int {
-	return r.writer
+func (r *writeOnlyRegister) Write(i int) {
+	r.writer <- i
+}
+
+type VirtualRegister struct {
+	value int
+	ch    chan int
+}
+
+func newVirtualRegister() *VirtualRegister {
+	r := VirtualRegister{value: 0, ch: make(chan int)}
+
+	return &r
+}
+
+func (r *VirtualRegister) Write(i int) {
+	r.ch <- i
+}
+
+func (r *VirtualRegister) Read() int {
+	return <-r.ch
 }

@@ -94,16 +94,6 @@ func (n *Node) SetPort(d Direction, r IRegister) error {
 	return errors.New("The specified port is not available")
 }
 
-// Reader returns the transfer channel of the node
-func (n *Node) Reader() <-chan int {
-	return n.transfer
-}
-
-// Writer returns the transfer channel of the node
-func (n *Node) Writer() chan<- int {
-	return n.transfer
-}
-
 // LoadInstructions loads bytecode into the node
 func (n *Node) LoadInstructions(i *InstructionSet) {
 	n.ProgramLoaded = true
@@ -114,27 +104,29 @@ func (n *Node) LoadInstructions(i *InstructionSet) {
 func (n *Node) UnloadBytecode() {
 	n.ProgramLoaded = false
 	n.memory = &InstructionSet{}
-	n.acc.Writer() <- 0
-	n.bak.Writer() <- 0
+	n.acc.Write(0)
+	n.bak.Write(0)
 	n.State = IDLE
 }
 
 // AttachNode bidirectionally attaches a node to this node
 func (n *Node) AttachNode(otherNode *Node, port Direction) {
 
+	buffer := newVirtualRegister()
+
 	switch port {
 	case UP:
-		n.up = otherNode
-		otherNode.down = n
+		n.up = buffer
+		otherNode.down = buffer
 	case RIGHT:
-		n.right = otherNode
-		otherNode.left = n
+		n.right = buffer
+		otherNode.left = buffer
 	case DOWN:
-		n.down = otherNode
-		otherNode.up = n
+		n.down = buffer
+		otherNode.up = buffer
 	case LEFT:
-		n.left = otherNode
-		otherNode.right = n
+		n.left = buffer
+		otherNode.right = buffer
 	}
 }
 
@@ -169,7 +161,7 @@ func (n *Node) getArgValue(arg string) (int, error) {
 		return val, nil
 	}
 
-	return <-reg.Reader(), err
+	return reg.Read(), err
 }
 
 func (n *Node) tick() error {
@@ -191,14 +183,21 @@ func (n *Node) tick() error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("[Node %d] - Moving %d from %s to %s\n", n.ID, inValue, ins.Arg1, ins.Arg2)
 
 		outReg, err := n.getRegister(ins.Arg2)
 		if err != nil {
 			return err
 		}
 
-		outReg.Writer() <- inValue
+		outReg.Write(inValue)
+	case ADD:
+		inValue, err := n.getArgValue(ins.Arg1)
+
+		if err != nil {
+			return err
+		}
+
+		n.acc.Write(n.acc.Read() + inValue)
 	default:
 		return errors.New("Unknown instruction.")
 	}
@@ -214,8 +213,6 @@ func (n *Node) tick() error {
 
 // Start starts a node
 func (n *Node) Start() {
-	fmt.Printf("Node %d started\n", n.ID)
-
 	var err error
 
 	for {
