@@ -54,12 +54,11 @@ func (r *writeOnlyRegister) Write(i int) {
 }
 
 type VirtualRegister struct {
-	value int
-	ch    chan int
+	ch chan int
 }
 
 func newVirtualRegister() *VirtualRegister {
-	r := VirtualRegister{value: 0, ch: make(chan int)}
+	r := VirtualRegister{ch: make(chan int)}
 
 	return &r
 }
