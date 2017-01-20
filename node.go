@@ -149,6 +149,11 @@ func (n *Node) getRegister(arg string) (IRegister, error) {
 }
 
 func (n *Node) getArgValue(arg string) (int, error) {
+
+	if arg == "nil" {
+		return 0, nil
+	}
+
 	reg, err := n.getRegister(arg)
 
 	if err != nil {
@@ -206,6 +211,22 @@ func (n *Node) tick() error {
 		}
 
 		n.acc.Write(n.acc.Read() - inValue)
+	case NOP:
+		// Skip instruction (Add 0 to ACC)
+		n.acc.Write(n.acc.Read() + 0)
+
+	case SWP:
+		// Swap ACC and BAK registers
+		tmp := n.acc.Read()
+		n.acc.Write(n.bak.Read())
+		n.bak.Write(tmp)
+	case SAV:
+		// Copy ACC to BAK register
+		n.bak.Write(n.acc.Read())
+
+	case NEG:
+		n.acc.Write(-n.acc.Read())
+
 	default:
 		return errors.New("Unknown instruction.")
 	}
