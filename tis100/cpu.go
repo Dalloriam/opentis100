@@ -98,12 +98,15 @@ func (c *Computer) LoadProgramBinary(p *Program) error {
 }
 
 // Start begins the execution of the currently loaded binary
-func (c *Computer) Start() error {
-	var err error
-
+func (c *Computer) Start() {
 	for i := 0; i < len(c.nodes); i++ {
 		go c.nodes[i].Start()
 	}
+}
 
-	return err
+// Stop stops the execution of the currently loaded binary
+func (c *Computer) Stop() {
+	for i := 0; i < len(c.nodes); i++ {
+		c.nodes[i].Stop()
+	}
 }

@@ -6,6 +6,7 @@ type operation int
 const (
 	MOV operation = 0
 	ADD operation = 1
+	SUB operation = 2
 )
 
 // Instruction represents a single TIS-100 instruction
@@ -23,6 +24,8 @@ func newInstruction(op string, arg1 string, arg2 string) *Instruction {
 		o = MOV
 	case "add":
 		o = ADD
+	case "sub":
+		o = SUB
 	}
 	return &Instruction{Operation: o, Arg1: arg1, Arg2: arg2}
 }

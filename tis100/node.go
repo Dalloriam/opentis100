@@ -36,7 +36,7 @@ type Node struct {
 
 	// Node Execution Information
 	currentInstruction int
-	transfer           chan int
+	running            bool
 	memory             *InstructionSet
 
 	// Physical Registers
@@ -198,6 +198,14 @@ func (n *Node) tick() error {
 		}
 
 		n.acc.Write(n.acc.Read() + inValue)
+	case SUB:
+		inValue, err := n.getArgValue(ins.Arg1)
+
+		if err != nil {
+			return err
+		}
+
+		n.acc.Write(n.acc.Read() - inValue)
 	default:
 		return errors.New("Unknown instruction.")
 	}
@@ -215,11 +223,24 @@ func (n *Node) tick() error {
 func (n *Node) Start() {
 	var err error
 
+	n.running = true
+
 	for {
+		// Stop node if TIS-100 has been stopped
+		if !n.running {
+			break
+		}
+
 		err = n.tick()
 
 		if err != nil {
 			fmt.Printf("[Node %d] - %s", n.ID, err)
 		}
 	}
+	fmt.Printf("[Node %d] - Shutdown\n", n.ID)
+}
+
+// Stop stops a node
+func (n *Node) Stop() {
+	n.running = false
 }

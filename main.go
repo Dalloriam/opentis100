@@ -11,12 +11,18 @@ func main() {
 	var err error
 
 	program := `@0
-	mov up acc
-	add acc
+	mov up right
+@1
+	mov left acc
+	add right
 	mov acc down
+@2
+	mov up left
+@5
+	mov up left
+
 @4
-	mov up acc
-	mov acc left
+	mov right left
 	`
 
 	fmt.Println("Input Program: ")
@@ -31,17 +37,25 @@ func main() {
 		panic(err)
 	}
 
-	in := make(chan int)
+	in1 := make(chan int)
+	in2 := make(chan int)
 
 	go func() {
-		for i := 0; i < 50; i++ {
-			in <- i
+		for i := 0; i < 50; i += 2 {
+			in1 <- i
 		}
-		close(in)
-		panic("DOne")
+		close(in1)
 	}()
 
-	err = comp.AttachInput(in, 0, tis100.UP)
+	go func() {
+		for i := 1; i < 50; i += 2 {
+			in2 <- i
+		}
+		close(in2)
+	}()
+
+	err = comp.AttachInput(in1, 0, tis100.UP)
+	err = comp.AttachInput(in2, 2, tis100.UP)
 
 	if err != nil {
 		panic(err)
@@ -57,8 +71,14 @@ func main() {
 
 	comp.Start()
 
+	i := 0
 	for o := range out {
 		fmt.Print("Output: ")
 		fmt.Println(o)
+		i++
+		if i >= 50 {
+			comp.Stop()
+			break
+		}
 	}
 }
