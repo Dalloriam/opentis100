@@ -4,17 +4,17 @@ type operation int
 
 // All instruction actions
 const (
-	MOV operation = 0
+	mov operation = 0
 
-	ADD operation = 1
-	SUB operation = 2
+	add operation = 1
+	sub operation = 2
 
-	NOP operation = 3
+	nop operation = 3
 
-	SWP operation = 4
-	SAV operation = 5
+	swp operation = 4
+	sav operation = 5
 
-	NEG operation = 6
+	neg operation = 6
 )
 
 // Instruction represents a single TIS-100 instruction
@@ -29,17 +29,17 @@ func newInstruction(op string, arg1 string, arg2 string) *Instruction {
 
 	switch op {
 	case "mov":
-		o = MOV
+		o = mov
 	case "add":
-		o = ADD
+		o = add
 	case "sub":
-		o = SUB
+		o = sub
 	case "nop":
-		o = NOP
+		o = nop
 	case "SAV":
-		o = SAV
+		o = sav
 	case "NEG":
-		o = NEG
+		o = neg
 	}
 	return &Instruction{Operation: o, Arg1: arg1, Arg2: arg2}
 }

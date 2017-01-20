@@ -40,14 +40,14 @@ type Node struct {
 	memory             *InstructionSet
 
 	// Physical Registers
-	acc IRegister
-	bak IRegister
+	acc iRegister
+	bak iRegister
 
 	// Virtual Registers
-	up    IRegister
-	right IRegister
-	down  IRegister
-	left  IRegister
+	up    iRegister
+	right iRegister
+	down  iRegister
+	left  iRegister
 }
 
 func newNode(id int) *Node {
@@ -55,7 +55,7 @@ func newNode(id int) *Node {
 }
 
 // GetPort returns the register connected at this port
-func (n *Node) GetPort(d Direction) *IRegister {
+func (n *Node) GetPort(d Direction) *iRegister {
 	switch d {
 	case UP:
 		return &n.up
@@ -73,7 +73,7 @@ func (n *Node) GetPort(d Direction) *IRegister {
 }
 
 // SetPort binds a register to a port of this node
-func (n *Node) SetPort(d Direction, r IRegister) error {
+func (n *Node) SetPort(d Direction, r iRegister) error {
 	current := n.GetPort(d)
 	if *current == nil {
 		switch d {
@@ -130,7 +130,7 @@ func (n *Node) AttachNode(otherNode *Node, port Direction) {
 	}
 }
 
-func (n *Node) getRegister(arg string) (IRegister, error) {
+func (n *Node) getRegister(arg string) (iRegister, error) {
 
 	switch arg {
 	case "up":
@@ -181,7 +181,7 @@ func (n *Node) tick() error {
 
 	// Parse and run instruction
 	switch ins.Operation {
-	case MOV:
+	case mov:
 		// Read from ins.Arg1, write to ins.Arg2
 		inValue, err := n.getArgValue(ins.Arg1)
 
@@ -195,7 +195,7 @@ func (n *Node) tick() error {
 		}
 
 		outReg.Write(inValue)
-	case ADD:
+	case add:
 		inValue, err := n.getArgValue(ins.Arg1)
 
 		if err != nil {
@@ -203,7 +203,7 @@ func (n *Node) tick() error {
 		}
 
 		n.acc.Write(n.acc.Read() + inValue)
-	case SUB:
+	case sub:
 		inValue, err := n.getArgValue(ins.Arg1)
 
 		if err != nil {
@@ -211,20 +211,20 @@ func (n *Node) tick() error {
 		}
 
 		n.acc.Write(n.acc.Read() - inValue)
-	case NOP:
+	case nop:
 		// Skip instruction (Add 0 to ACC)
 		n.acc.Write(n.acc.Read() + 0)
 
-	case SWP:
+	case swp:
 		// Swap ACC and BAK registers
 		tmp := n.acc.Read()
 		n.acc.Write(n.bak.Read())
 		n.bak.Write(tmp)
-	case SAV:
+	case sav:
 		// Copy ACC to BAK register
 		n.bak.Write(n.acc.Read())
 
-	case NEG:
+	case neg:
 		n.acc.Write(-n.acc.Read())
 
 	default:

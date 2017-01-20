@@ -1,6 +1,8 @@
 package opentis100
 
 import (
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"regexp"
 	"strconv"
@@ -43,8 +45,7 @@ func parseInstruction(instruction string) (*Instruction, error) {
 
 }
 
-// ParseBlock parses the instruction set for a single node
-func ParseBlock(lines []string) (*InstructionSet, error) {
+func parseBlock(lines []string) (*InstructionSet, error) {
 	var err error
 	ins := &InstructionSet{Labels: make(map[string]int), Instructions: []*Instruction{}}
 
@@ -77,16 +78,14 @@ func ParseBlock(lines []string) (*InstructionSet, error) {
 	return ins, err
 }
 
-// Program represents a program that can be executed by the TIS-100
-type Program struct {
+type program struct {
 	Name string
 	Sets map[int]*InstructionSet // One InstructionSet per node
 }
 
-// Compile compile TIS source code and returns an executable program
-func Compile(name string, src string) (*Program, error) {
+func compile(src string) ([]byte, error) {
 	var err error
-	var prog *Program
+	var prog program
 
 	sets := make(map[int]*InstructionSet)
 
@@ -104,7 +103,7 @@ func Compile(name string, src string) (*Program, error) {
 		if len(line) > 0 {
 			if strings.HasPrefix(line, "@") {
 				if currentBlock != nil {
-					set, err := ParseBlock(currentBlock)
+					set, err := parseBlock(currentBlock)
 
 					if err != nil {
 						return nil, err
@@ -125,7 +124,7 @@ func Compile(name string, src string) (*Program, error) {
 
 	// Push last block
 	if currentBlock != nil {
-		set, err := ParseBlock(currentBlock)
+		set, err := parseBlock(currentBlock)
 
 		if err != nil {
 			return nil, err
@@ -134,6 +133,17 @@ func Compile(name string, src string) (*Program, error) {
 		sets[currentID] = set
 	}
 
-	prog = &Program{Name: name, Sets: sets}
-	return prog, err
+	prog = program{Sets: sets}
+
+	// Dump compiled program to binary
+	b := bytes.Buffer{}
+	encoder := gob.NewEncoder(&b)
+
+	err = encoder.Encode(prog)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return b.Bytes(), err
 }

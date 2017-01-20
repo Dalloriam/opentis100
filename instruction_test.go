@@ -15,9 +15,9 @@ type testCase struct {
 func TestNewInstruction(t *testing.T) {
 
 	cases := []testCase{
-		testCase{op: "mov", arg1: "1", arg2: "acc", expectedOp: MOV},
-		testCase{op: "sub", arg1: "1", expectedOp: SUB},
-		testCase{op: "add", arg1: "1", expectedOp: ADD},
+		testCase{op: "mov", arg1: "1", arg2: "acc", expectedOp: mov},
+		testCase{op: "sub", arg1: "1", expectedOp: sub},
+		testCase{op: "add", arg1: "1", expectedOp: add},
 	}
 
 	for _, cas := range cases {

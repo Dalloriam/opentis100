@@ -7,7 +7,7 @@ func TestCompileMov(t *testing.T) {
 mov 1 acc
 	`
 
-	p, err := Compile("testProg", program)
+	p, err := compile("testProg", program)
 
 	if err != nil {
 		t.Errorf("Unexpected compile error: %s", err.Error())

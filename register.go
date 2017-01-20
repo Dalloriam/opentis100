@@ -1,24 +1,20 @@
 package opentis100
 
-// SimpleRegister defines a simple register
-type SimpleRegister struct {
+type simpleRegister struct {
 	value int
 }
 
-// NewRegister makes a new simple register
-func newRegister() *SimpleRegister {
-	r := SimpleRegister{value: 0}
+func newRegister() *simpleRegister {
+	r := simpleRegister{value: 0}
 
 	return &r
 }
 
-// Reader returns the reading channel of the register
-func (r *SimpleRegister) Read() int {
+func (r *simpleRegister) Read() int {
 	return r.value
 }
 
-// Writer returns the writing channel of the register
-func (r *SimpleRegister) Write(i int) {
+func (r *simpleRegister) Write(i int) {
 	r.value = i
 }
 
@@ -53,20 +49,20 @@ func (r *writeOnlyRegister) Write(i int) {
 	r.writer <- i
 }
 
-type VirtualRegister struct {
+type virtualRegister struct {
 	ch chan int
 }
 
-func newVirtualRegister() *VirtualRegister {
-	r := VirtualRegister{ch: make(chan int)}
+func newVirtualRegister() *virtualRegister {
+	r := virtualRegister{ch: make(chan int)}
 
 	return &r
 }
 
-func (r *VirtualRegister) Write(i int) {
+func (r *virtualRegister) Write(i int) {
 	r.ch <- i
 }
 
-func (r *VirtualRegister) Read() int {
+func (r *virtualRegister) Read() int {
 	return <-r.ch
 }
