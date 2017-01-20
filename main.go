@@ -32,6 +32,7 @@ func main() {
 			in <- i
 		}
 		close(in)
+		panic("Done.")
 	}()
 
 	err = comp.AttachInput(in, 0, tis100.UP)
@@ -43,13 +44,6 @@ func main() {
 	fmt.Println("Starting & attaching output goroutine...")
 	out := make(chan int)
 
-	go func() {
-		for i := range out {
-			fmt.Print("TIS-100: ")
-			fmt.Println(i)
-		}
-	}()
-
 	err = comp.AttachOutput(out, 0, tis100.LEFT)
 
 	if err != nil {
@@ -57,4 +51,9 @@ func main() {
 	}
 
 	comp.Start()
+
+	for o := range out {
+		fmt.Print("TIS-100: ")
+		fmt.Println(o)
+	}
 }

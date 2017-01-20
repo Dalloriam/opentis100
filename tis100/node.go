@@ -3,6 +3,7 @@ package tis100
 import (
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 type state int
@@ -137,11 +138,91 @@ func (n *Node) AttachNode(otherNode *Node, port Direction) {
 	}
 }
 
-func (n *Node) tick() {
+func (n *Node) getRegister(arg string) (IRegister, error) {
 
+	switch arg {
+	case "up":
+		return n.up, nil
+	case "down":
+		return n.down, nil
+	case "right":
+		return n.right, nil
+	case "left":
+		return n.left, nil
+	case "acc":
+		return n.acc, nil
+	default:
+		return nil, fmt.Errorf("Register %s does not exist", arg)
+	}
+}
+
+func (n *Node) getArgValue(arg string) (int, error) {
+	reg, err := n.getRegister(arg)
+
+	if err != nil {
+		val, err := strconv.Atoi(arg)
+
+		if err != nil {
+			return 0, err
+		}
+
+		return val, nil
+	}
+
+	return <-reg.Reader(), err
+}
+
+func (n *Node) tick() error {
+
+	// Do nothing if nothing in memory
+	if n.memory == nil {
+		return nil
+	}
+
+	// Get current instruction
+	ins := n.memory.Instructions[n.currentInstruction]
+
+	// Parse and run instruction
+	switch ins.Operation {
+	case MOV:
+		// Read from ins.Arg1, write to ins.Arg2
+		inValue, err := n.getArgValue(ins.Arg1)
+
+		if err != nil {
+			return err
+		}
+		fmt.Printf("[Node %d] - Moving %d from %s to %s\n", n.ID, inValue, ins.Arg1, ins.Arg2)
+
+		outReg, err := n.getRegister(ins.Arg2)
+		if err != nil {
+			return err
+		}
+
+		outReg.Writer() <- inValue
+	default:
+		return errors.New("Unknown instruction.")
+	}
+	// Update current instruction index
+	n.currentInstruction++
+
+	if n.currentInstruction > len(n.memory.Instructions)-1 {
+		n.currentInstruction = 0
+	}
+
+	return nil
 }
 
 // Start starts a node
 func (n *Node) Start() {
-	fmt.Printf("Node %d started", n.ID)
+	fmt.Printf("Node %d started\n", n.ID)
+
+	var err error
+
+	for {
+		err = n.tick()
+
+		if err != nil {
+			fmt.Printf("[Node %d] - %s", n.ID, err)
+		}
+	}
 }

@@ -1,5 +1,7 @@
 package tis100
 
+import "fmt"
+
 // SimpleRegister defines a simple register
 type SimpleRegister struct {
 	value  int
@@ -37,11 +39,12 @@ func (r *SimpleRegister) valueUpdater() {
 	for {
 		select {
 		case x, open := <-r.writer:
+			r.value = x
+			fmt.Printf("Value: %d\n", x)
 			if !open {
 				close(r.writer)
 				return
 			}
-			r.value = x
 		}
 	}
 }

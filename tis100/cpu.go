@@ -1,6 +1,8 @@
 package tis100
 
-import "errors"
+import (
+	"errors"
+)
 
 const maxNodeX int = 4
 const maxNodeY int = 3
@@ -88,23 +90,19 @@ func (c *Computer) LoadProgramSource(name string, src string) error {
 func (c *Computer) LoadProgramBinary(p *Program) error {
 	var err error
 
-	for i, set := range p.Sets {
-		c.nodes[i].LoadInstructions(set)
+	for i := 0; i < len(p.Sets); i++ {
+		c.nodes[i].LoadInstructions(p.Sets[i])
 	}
 
 	return err
-}
-
-func (c *Computer) tick() {
-
 }
 
 // Start begins the execution of the currently loaded binary
 func (c *Computer) Start() error {
 	var err error
 
-	for _, node := range c.nodes {
-		go node.Start()
+	for i := 0; i < len(c.nodes); i++ {
+		go c.nodes[i].Start()
 	}
 
 	return err
