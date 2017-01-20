@@ -1,4 +1,4 @@
-package tis100
+package opentis100
 
 import (
 	"errors"

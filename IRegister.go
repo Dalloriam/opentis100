@@ -1,4 +1,4 @@
-package tis100
+package opentis100
 
 // IRegister describes a virtual register
 type IRegister interface {

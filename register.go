@@ -1,4 +1,4 @@
-package tis100
+package opentis100
 
 // SimpleRegister defines a simple register
 type SimpleRegister struct {
