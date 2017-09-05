@@ -1,4 +1,4 @@
-package opentis100
+package opentis
 
 import (
 	"bytes"
@@ -13,15 +13,16 @@ const maxNodeY int = 3
 type Computer struct {
 	Name  string
 	nodes []*Node
+	Debug bool
 }
 
 // New returns a new instance of the TIS-100
-func New(computerName string) *Computer {
+func New(computerName string, debug bool) *Computer {
 	nodeList := []*Node{}
 
 	for y := 0; y < maxNodeY; y++ {
 		for x := 0; x < maxNodeX; x++ {
-			nodeList = append(nodeList, newNode(maxNodeX*y+x))
+			nodeList = append(nodeList, newNode(maxNodeX*y+x, debug))
 		}
 	}
 
@@ -39,7 +40,7 @@ func New(computerName string) *Computer {
 		}
 	}
 
-	return &Computer{Name: computerName, nodes: nodeList}
+	return &Computer{Name: computerName, nodes: nodeList, Debug: debug}
 }
 
 // AttachInput attaches an input stream to the specified port of the specified node
@@ -51,7 +52,7 @@ func (c *Computer) AttachInput(inStream <-chan int, nodeID int, nodeDirection Di
 	if nodeID < len(c.nodes) {
 		err = c.nodes[nodeID].SetPort(nodeDirection, r)
 	} else {
-		err = errors.New("The specified node doesn't exist!")
+		err = errors.New("the specified node doesn't exist")
 	}
 
 	return err
@@ -66,13 +67,13 @@ func (c *Computer) AttachOutput(outStream chan<- int, nodeID int, nodeDirection 
 	if nodeID < len(c.nodes) {
 		err = c.nodes[nodeID].SetPort(nodeDirection, r)
 	} else {
-		err = errors.New("The specified node doesn't exist!")
+		err = errors.New("the specified node doesn't exist")
 	}
 
 	return err
 }
 
-// LoadProgramSource compiles the source of a program and loads it into the TIS-100
+// CompileProgram compiles the source of a program and loads it into the TIS-100
 func (c *Computer) CompileProgram(src string) ([]byte, error) {
 	var err error
 	b, err := compile(src)

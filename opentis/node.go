@@ -1,9 +1,10 @@
-package opentis100
+package opentis
 
 import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type state int
@@ -31,6 +32,7 @@ const (
 type Node struct {
 	// Node Information
 	ID            int
+	Debug         bool
 	State         state
 	ProgramLoaded bool
 
@@ -50,8 +52,12 @@ type Node struct {
 	left  iRegister
 }
 
-func newNode(id int) *Node {
-	return &Node{ID: id, acc: newRegister(), bak: newRegister(), State: IDLE, ProgramLoaded: false, memory: nil}
+func newNode(id int, debug bool) *Node {
+	return &Node{ID: id, acc: newRegister(), bak: newRegister(), State: IDLE, ProgramLoaded: false, memory: nil, Debug: debug}
+}
+
+func (n *Node) getAllRegisters() []*iRegister {
+	return []*iRegister{&n.up, &n.right, &n.down, &n.left, &n.acc, &n.bak}
 }
 
 // GetPort returns the register connected at this port
@@ -132,6 +138,8 @@ func (n *Node) AttachNode(otherNode *Node, port Direction) {
 
 func (n *Node) getRegister(arg string) (iRegister, error) {
 
+	arg = strings.ToLower(arg)
+
 	switch arg {
 	case "up":
 		return n.up, nil
@@ -157,7 +165,8 @@ func (n *Node) getArgValue(arg string) (int, error) {
 	reg, err := n.getRegister(arg)
 
 	if err != nil {
-		val, err := strconv.Atoi(arg)
+		var val int
+		val, err = strconv.Atoi(arg)
 
 		if err != nil {
 			return 0, err
@@ -166,18 +175,21 @@ func (n *Node) getArgValue(arg string) (int, error) {
 		return val, nil
 	}
 
-	return reg.Read(), err
+	val, err := reg.Read()
+
+	return val, err
 }
 
 func (n *Node) tick() error {
 
 	// Do nothing if nothing in memory
 	if n.memory == nil {
-		return nil
+		return errors.New("Nothing to do")
 	}
 
 	// Get current instruction
 	ins := n.memory.Instructions[n.currentInstruction]
+	n.log(fmt.Sprint(ins))
 
 	// Parse and run instruction
 	switch ins.Operation {
@@ -202,7 +214,13 @@ func (n *Node) tick() error {
 			return err
 		}
 
-		n.acc.Write(n.acc.Read() + inValue)
+		val, err := n.acc.Read()
+
+		if err != nil {
+			return err
+		}
+
+		n.acc.Write(val + inValue)
 	case sub:
 		inValue, err := n.getArgValue(ins.Arg1)
 
@@ -210,25 +228,54 @@ func (n *Node) tick() error {
 			return err
 		}
 
-		n.acc.Write(n.acc.Read() - inValue)
+		val, err := n.acc.Read()
+
+		if err != nil {
+			return err
+		}
+
+		n.acc.Write(val - inValue)
 	case nop:
 		// Skip instruction (Add 0 to ACC)
-		n.acc.Write(n.acc.Read() + 0)
+		val, err := n.acc.Read()
+
+		if err != nil {
+			return err
+		}
+
+		n.acc.Write(val + 0)
 
 	case swp:
 		// Swap ACC and BAK registers
-		tmp := n.acc.Read()
-		n.acc.Write(n.bak.Read())
+		tmp, err := n.acc.Read()
+		if err != nil {
+			return err
+		}
+
+		bak, err := n.bak.Read()
+		if err != nil {
+			return err
+		}
+
+		n.acc.Write(bak)
 		n.bak.Write(tmp)
 	case sav:
 		// Copy ACC to BAK register
-		n.bak.Write(n.acc.Read())
+		val, err := n.acc.Read()
+		if err != nil {
+			return err
+		}
+		n.bak.Write(val)
 
 	case neg:
-		n.acc.Write(-n.acc.Read())
+		val, err := n.acc.Read()
+		if err != nil {
+			return err
+		}
+		n.acc.Write(-val)
 
 	default:
-		return errors.New("Unknown instruction.")
+		return errors.New("unknown instruction")
 	}
 	// Update current instruction index
 	n.currentInstruction++
@@ -238,6 +285,12 @@ func (n *Node) tick() error {
 	}
 
 	return nil
+}
+
+func (n *Node) log(msg string) {
+	if n.Debug {
+		fmt.Printf("[Node %d] - %s\n", n.ID, msg)
+	}
 }
 
 // Start starts a node
@@ -255,10 +308,17 @@ func (n *Node) Start() {
 		err = n.tick()
 
 		if err != nil {
-			fmt.Printf("[Node %d] - %s", n.ID, err)
+			n.log(err.Error())
+			n.running = false
 		}
 	}
-	fmt.Printf("[Node %d] - Shutdown\n", n.ID)
+	n.log("Shutdown")
+
+	for _, reg := range n.getAllRegisters() {
+		if *reg != nil {
+			(*reg).Exit()
+		}
+	}
 }
 
 // Stop stops a node

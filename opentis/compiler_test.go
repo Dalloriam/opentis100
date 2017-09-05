@@ -1,4 +1,4 @@
-package opentis100
+package opentis
 
 import "testing"
 
@@ -7,7 +7,7 @@ func TestCompileMov(t *testing.T) {
 mov 1 acc
 	`
 
-	p, err := compile("testProg", program)
+	p, err := compile(program)
 
 	if err != nil {
 		t.Errorf("Unexpected compile error: %s", err.Error())

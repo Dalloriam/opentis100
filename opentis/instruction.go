@@ -1,4 +1,6 @@
-package opentis100
+package opentis
+
+import "strings"
 
 type operation int
 
@@ -26,6 +28,8 @@ type Instruction struct {
 
 func newInstruction(op string, arg1 string, arg2 string) *Instruction {
 	var o operation
+
+	op = strings.ToLower(op)
 
 	switch op {
 	case "mov":

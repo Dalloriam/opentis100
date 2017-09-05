@@ -1,4 +1,4 @@
-package opentis100
+package opentis
 
 import (
 	"bytes"
@@ -65,7 +65,8 @@ func parseBlock(lines []string) (*InstructionSet, error) {
 
 		instr := strings.TrimSpace(strings.Replace(line, labels[0]+":", "", -1))
 
-		in, err := parseInstruction(instr)
+		var in *Instruction
+		in, err = parseInstruction(instr)
 
 		if err != nil {
 			return nil, err
@@ -103,7 +104,8 @@ func compile(src string) ([]byte, error) {
 		if len(line) > 0 {
 			if strings.HasPrefix(line, "@") {
 				if currentBlock != nil {
-					set, err := parseBlock(currentBlock)
+					var set *InstructionSet
+					set, err = parseBlock(currentBlock)
 
 					if err != nil {
 						return nil, err
@@ -124,7 +126,8 @@ func compile(src string) ([]byte, error) {
 
 	// Push last block
 	if currentBlock != nil {
-		set, err := parseBlock(currentBlock)
+		var set *InstructionSet
+		set, err = parseBlock(currentBlock)
 
 		if err != nil {
 			return nil, err

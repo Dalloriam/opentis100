@@ -1,4 +1,4 @@
-package opentis100
+package opentis
 
 import (
 	"fmt"
