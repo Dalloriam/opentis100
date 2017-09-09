@@ -1,10 +1,11 @@
-package opentis
+package opentis100
 
 import (
 	"errors"
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type state int
@@ -274,6 +275,46 @@ func (n *Node) tick() error {
 		}
 		n.acc.Write(-val)
 
+	case jmp:
+		tgt := ins.Arg1
+		n.currentInstruction = n.memory.Labels[tgt] - 1 // TODO: Errorcheck
+
+	case jez:
+		tgt := ins.Arg1
+
+		val, err := n.acc.Read()
+		if err != nil {
+			return err
+		}
+
+		if val == 0 {
+			n.currentInstruction = n.memory.Labels[tgt] - 1 // TODO: Errorcheck
+		}
+
+	case jlz:
+		tgt := ins.Arg1
+
+		val, err := n.acc.Read()
+		if err != nil {
+			return err
+		}
+
+		if val < 0 {
+			n.currentInstruction = n.memory.Labels[tgt] - 1 // TODO: Errorcheck
+		}
+
+	case jgz:
+		tgt := ins.Arg1
+
+		val, err := n.acc.Read()
+		if err != nil {
+			return err
+		}
+
+		if val > 0 {
+			n.currentInstruction = n.memory.Labels[tgt] - 1 // TODO: Errorcheck
+		}
+
 	default:
 		return errors.New("unknown instruction")
 	}
@@ -294,7 +335,7 @@ func (n *Node) log(msg string) {
 }
 
 // Start starts a node
-func (n *Node) Start() {
+func (n *Node) Start(wg *sync.WaitGroup) {
 	var err error
 
 	n.running = true
@@ -319,6 +360,7 @@ func (n *Node) Start() {
 			(*reg).Exit()
 		}
 	}
+	wg.Done()
 }
 
 // Stop stops a node

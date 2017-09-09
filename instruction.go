@@ -1,6 +1,8 @@
-package opentis
+package opentis100
 
-import "strings"
+import (
+	"strings"
+)
 
 type operation int
 
@@ -17,6 +19,11 @@ const (
 	sav operation = 5
 
 	neg operation = 6
+
+	jez operation = 7
+	jmp operation = 8
+	jlz operation = 9
+	jgz operation = 10
 )
 
 // Instruction represents a single TIS-100 instruction
@@ -40,10 +47,20 @@ func newInstruction(op string, arg1 string, arg2 string) *Instruction {
 		o = sub
 	case "nop":
 		o = nop
-	case "SAV":
+	case "sav":
 		o = sav
-	case "NEG":
+	case "swp":
+		o = swp
+	case "neg":
 		o = neg
+	case "jez":
+		o = jez
+	case "jmp":
+		o = jmp
+	case "jlz":
+		o = jlz
+	case "jgz":
+		o = jgz
 	}
 	return &Instruction{Operation: o, Arg1: arg1, Arg2: arg2}
 }

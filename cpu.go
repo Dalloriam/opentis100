@@ -1,9 +1,10 @@
-package opentis
+package opentis100
 
 import (
 	"bytes"
 	"encoding/gob"
 	"errors"
+	"sync"
 )
 
 const maxNodeX int = 4
@@ -14,6 +15,7 @@ type Computer struct {
 	Name  string
 	nodes []*Node
 	Debug bool
+	wg    *sync.WaitGroup
 }
 
 // New returns a new instance of the TIS-100
@@ -106,9 +108,17 @@ func (c *Computer) LoadProgramBinary(b []byte) error {
 
 // Start begins the execution of the currently loaded binary
 func (c *Computer) Start() {
+	var wg sync.WaitGroup
+
 	for i := 0; i < len(c.nodes); i++ {
-		go c.nodes[i].Start()
+		go c.nodes[i].Start(&wg)
+		wg.Add(1)
 	}
+	c.wg = &wg
+}
+
+func (c *Computer) WaitUntilComplete() {
+	c.wg.Wait()
 }
 
 // Stop stops the execution of the currently loaded binary

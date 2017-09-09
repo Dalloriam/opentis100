@@ -1,4 +1,4 @@
-package opentis
+package opentis100
 
 import (
 	"bytes"

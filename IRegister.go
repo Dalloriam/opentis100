@@ -1,4 +1,4 @@
-package opentis
+package opentis100
 
 type iRegister interface {
 	Read() (int, error)
