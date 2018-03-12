@@ -1,8 +1,6 @@
 package opentis100
 
 import (
-	"bytes"
-	"encoding/gob"
 	"errors"
 	"sync"
 )
@@ -76,30 +74,16 @@ func (c *Computer) AttachOutput(outStream chan<- int, nodeID int, nodeDirection 
 }
 
 // CompileProgram compiles the source of a program and loads it into the TIS-100
-func (c *Computer) CompileProgram(src string) ([]byte, error) {
-	var err error
-	b, err := compile(src)
-	return b, err
+func (c *Computer) CompileProgram(src string) (*Program, error) {
+	ins, err := compile(src)
+	return ins, err
 }
 
 // LoadProgramBinary loads a compiled program in the TIS-100
-func (c *Computer) LoadProgramBinary(b []byte) error {
+func (c *Computer) LoadProgram(p *Program) error {
 	var err error
 
-	p := program{}
-
-	buf := bytes.Buffer{}
-	buf.Write(b)
-
-	d := gob.NewDecoder(&buf)
-
-	err = d.Decode(&p)
-
-	if err != nil {
-		return err
-	}
-
-	for i, set := range p.Sets {
+	for i, set := range p.InstructionSets {
 		c.nodes[i].LoadInstructions(set)
 	}
 

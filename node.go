@@ -40,7 +40,7 @@ type Node struct {
 	// Node Execution Information
 	currentInstruction int
 	running            bool
-	memory             *InstructionSet
+	memory             *instructionSet
 
 	// Physical Registers
 	acc iRegister
@@ -102,7 +102,7 @@ func (n *Node) SetPort(d Direction, r iRegister) error {
 }
 
 // LoadInstructions loads bytecode into the node
-func (n *Node) LoadInstructions(i *InstructionSet) {
+func (n *Node) LoadInstructions(i *instructionSet) {
 	n.ProgramLoaded = true
 	n.memory = i
 }
@@ -110,7 +110,7 @@ func (n *Node) LoadInstructions(i *InstructionSet) {
 // UnloadBytecode clears the node's memory and registers
 func (n *Node) UnloadBytecode() {
 	n.ProgramLoaded = false
-	n.memory = &InstructionSet{}
+	n.memory = &instructionSet{}
 	n.acc.Write(0)
 	n.bak.Write(0)
 	n.State = IDLE
