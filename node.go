@@ -196,20 +196,20 @@ func (n *Node) tick() error {
 	switch ins.Operation {
 	case mov:
 		// Read from ins.Arg1, write to ins.Arg2
-		inValue, err := n.getArgValue(ins.Arg1)
+		inValue, err := n.getArgValue(ins.Arguments[0])
 
 		if err != nil {
 			return err
 		}
 
-		outReg, err := n.getRegister(ins.Arg2)
+		outReg, err := n.getRegister(ins.Arguments[0])
 		if err != nil {
 			return err
 		}
 
 		outReg.Write(inValue)
 	case add:
-		inValue, err := n.getArgValue(ins.Arg1)
+		inValue, err := n.getArgValue(ins.Arguments[0])
 
 		if err != nil {
 			return err
@@ -223,7 +223,7 @@ func (n *Node) tick() error {
 
 		n.acc.Write(val + inValue)
 	case sub:
-		inValue, err := n.getArgValue(ins.Arg1)
+		inValue, err := n.getArgValue(ins.Arguments[0])
 
 		if err != nil {
 			return err
@@ -276,11 +276,11 @@ func (n *Node) tick() error {
 		n.acc.Write(-val)
 
 	case jmp:
-		tgt := ins.Arg1
+		tgt := ins.Arguments[0]
 		n.currentInstruction = n.memory.Labels[tgt] - 1 // TODO: Errorcheck
 
 	case jez:
-		tgt := ins.Arg1
+		tgt := ins.Arguments[0]
 
 		val, err := n.acc.Read()
 		if err != nil {
@@ -292,7 +292,7 @@ func (n *Node) tick() error {
 		}
 
 	case jlz:
-		tgt := ins.Arg1
+		tgt := ins.Arguments[0]
 
 		val, err := n.acc.Read()
 		if err != nil {
@@ -304,7 +304,7 @@ func (n *Node) tick() error {
 		}
 
 	case jgz:
-		tgt := ins.Arg1
+		tgt := ins.Arguments[0]
 
 		val, err := n.acc.Read()
 		if err != nil {

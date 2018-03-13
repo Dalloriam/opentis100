@@ -29,11 +29,10 @@ const (
 // Instruction represents a single TIS-100 instruction
 type Instruction struct {
 	Operation operation
-	Arg1      string
-	Arg2      string
+	Arguments []string
 }
 
-func newInstruction(op string, arg1 string, arg2 string) *Instruction {
+func newInstruction(op string, arguments []string) *Instruction {
 	var o operation
 
 	op = strings.ToLower(op)
@@ -62,5 +61,5 @@ func newInstruction(op string, arg1 string, arg2 string) *Instruction {
 	case "jgz":
 		o = jgz
 	}
-	return &Instruction{Operation: o, Arg1: arg1, Arg2: arg2}
+	return &Instruction{Operation: o, Arguments: arguments}
 }

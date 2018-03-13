@@ -5,20 +5,22 @@ import (
 )
 
 const (
-	linebreak = "LINEBREAK"
-	at        = "AT"
-	colon     = "COLON"
-	word      = "WORD"
-	digit     = "DIGIT"
+	LINEBREAK = "LINEBREAK"
+	AT        = "AT"
+	COLON     = "COLON"
+	WORD      = "WORD"
+	DIGIT     = "DIGIT"
+	EOF       = "EOF"
+	LABEL     = "LABEL"
 )
 
 type Token struct {
-	tokType string
-	value   string
+	TokType string
+	Value   string
 }
 
-func Tokenize(source string) (<-chan Token, <-chan error) {
-	outChan := make(chan Token)
+func Tokenize(source string) (<-chan *Token, <-chan error) {
+	outChan := make(chan *Token)
 	errChan := make(chan error)
 
 	go func() {
@@ -29,11 +31,9 @@ func Tokenize(source string) (<-chan Token, <-chan error) {
 			head := source[i]
 
 			if head == '\n' {
-				outChan <- Token{linebreak, "\n"}
+				outChan <- &Token{LINEBREAK, "\n"}
 			} else if head == '@' {
-				outChan <- Token{at, "@"}
-			} else if head == ':' {
-				outChan <- Token{colon, ":"}
+				outChan <- &Token{AT, "@"}
 			} else if unicode.IsLetter(rune(head)) {
 				var tokValue []uint8
 
@@ -41,8 +41,17 @@ func Tokenize(source string) (<-chan Token, <-chan error) {
 					tokValue = append(tokValue, source[i])
 					i++
 				}
-				i--
-				outChan <- Token{word, string(tokValue)}
+
+				var tokType string
+				if i < len(source) && source[i] == ':' {
+					// Current word is a label
+					tokType = LABEL
+				} else {
+					// TODO: Distinct. keywords & arguments
+					tokType = WORD
+					i--
+				}
+				outChan <- &Token{tokType, string(tokValue)}
 			} else if unicode.IsDigit(rune(head)) {
 				var tokValue []uint8
 
@@ -52,9 +61,11 @@ func Tokenize(source string) (<-chan Token, <-chan error) {
 				}
 				i--
 
-				outChan <- Token{digit, string(tokValue)}
+				outChan <- &Token{DIGIT, string(tokValue)}
 			}
 		}
+
+		outChan <- &Token{EOF, "EOF"}
 
 	}()
 
